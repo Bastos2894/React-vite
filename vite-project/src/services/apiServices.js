@@ -10,9 +10,10 @@ export const getApiData = async (endpoint, params) =>{
         }
 
         const data = await response.json()
-         return Array.isArray(data) ? data : [];
+        return data;
     } catch (e){
         console.error('Catch error: ',e)
     }
 }
+
 

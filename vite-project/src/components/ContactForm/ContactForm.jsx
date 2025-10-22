@@ -1,12 +1,16 @@
-import { useEffect, useState } from 'react'
+import { useContext, useEffect, useState } from 'react'
 import './ContactForm.css'
 
 //COMPONENTS
 import Button from '../Button/Button.jsx'
 
+//CONTEXT
+import { AppContext } from '../../contexts/AppContext.jsx'
+
 
 
 function ContactForm(){
+    const appContext = useContext(AppContext)
     const [formData, setFormData] = useState({
         name: '',
         email: '',
@@ -14,10 +18,31 @@ function ContactForm(){
     })
     const [isFormValid, setIsFormValid] = useState(false)
 
+    const [ formSubmitLoading, setFormSubmitLoading] = useState(false)
+    const [ formSubmitted, setFormSubmitted] = useState(false)
+
     const handleSubmit = async (e) =>{
         e.preventDefault()
         if (isFormValid){
-            null
+            setFormSubmitLoading(true)
+            try {
+                const response = await fetch('https://api.web3forms.com/submit',{
+                    method: 'POST',
+                    headers:{
+                        'Content-Type': 'application/json'
+                    },
+                    body:JSON.stringify({...formData, access_key:"ff5c75fc-9db9-4cbf-8f25-d7da13b8a29e"})
+                })
+                if (response.ok){
+                    setFormSubmitted(true)
+                } else {
+                    alert('Erro ao enviar!!')
+                }
+            } catch (e){
+                alert('Erro: ', e)
+            } finally{
+                setFormSubmitLoading(false)
+            }
         }
     }
 
@@ -43,16 +68,16 @@ function ContactForm(){
         
         <div className="contact-form d-flex fd-column al-center">
             <h2>
-                We love meeting new people and helping them.
+                {appContext.languages?.[appContext.language]?.contact?.title}
             </h2>
-            <form>
+            <form onSubmit={handleSubmit}>
                 <div className="d-flex form-group">
                     <input
                         className="form-input"
                         type="text" 
                         name="name" 
                         id="name"
-                        placeholder="Name *" 
+                        placeholder={appContext.languages?.[appContext.language]?.contact?.pl1} 
                         onChange={handleChange}
 
                     />
@@ -61,7 +86,7 @@ function ContactForm(){
                         type="email" 
                         name="email" 
                         id="email"
-                        placeholder="Email *" 
+                        placeholder={appContext.languages?.[appContext.language]?.contact?.pl2} 
                         onChange={handleChange}
 
                     />
@@ -73,14 +98,15 @@ function ContactForm(){
                         className="form-input" 
                         name="message" 
                         id="message"
-                        placeholder="Mensagem *"
+                        placeholder= {appContext.languages?.[appContext.language]?.contact?.pl3}
                         onChange={handleChange}
                         rows="4"    
                     ></textarea>
                 </div>
                 <div className="al-center d-flex jc-end form-group">
-                    <Button type="submit" buttonStyle="secondary" disabled={!isFormValid}>
-                        Enviar
+                    {formSubmitted && <p className='text-primary'>{appContext.languages?.[appContext.language]?.contact?.sucessMsg}</p>}
+                    <Button type="submit" buttonStyle="secondary" disabled={!isFormValid || formSubmitLoading}>
+                        {appContext.languages?.[appContext.language]?.general?.send}
                     </Button>
                     
                 </div>

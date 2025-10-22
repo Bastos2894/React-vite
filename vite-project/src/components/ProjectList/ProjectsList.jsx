@@ -1,16 +1,36 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useContext } from 'react'
 import './ProjectsList.css'
 
 // ASSETS
 import LikeFilled from '../../assets/like_filled.svg'
-import Like from '../../assets/like.svg'
+import LikeOut from '../../assets/like.svg'
+
+//COMPONENTS
+import Button from '../Button/Button'
 
 //UTILS
 import { getApiData } from '../../services/apiServices'
 
+//CONTEXT
+import { AppContext } from '../../contexts/AppContext'
+
+
 function ProjectsList(){
+    const appContext = useContext(AppContext)
+    const [favProjects, setFavProject]= useState([])
     const [projects, setProjects] = useState([])
-    
+    const handleSavedFavProjects = (id) => {
+        setFavProject((prevFavProjects) => {
+            if (prevFavProjects.includes(id)){
+                const filterArray = prevFavProjects.filter((projectId) => projectId !== id)
+                sessionStorage.setItem('favProjects', JSON.stringify(filterArray))
+                return prevFavProjects.filter((projectId) => projectId !==id)
+            } else {
+                sessionStorage.setItem('favProjects', JSON.stringify([...prevFavProjects, id]))
+                return [...prevFavProjects, id]
+            }
+        })
+    }
 
     useEffect(()=> {
         const fetchData = async () => {
@@ -23,12 +43,19 @@ function ProjectsList(){
         }
         fetchData()
     }, [])
+
+    useEffect(() =>{
+        const savedFavProjects = JSON.parse(sessionStorage.getItem('favProjects'))
+        if (savedFavProjects) {
+            setFavProject(savedFavProjects)
+        }
+    }, [])
     return(
         <div className="projects-section">
             <div className="projects-hero">
-                <h2>Follow Our Projects</h2>
+                <h2>{appContext.languages?.[appContext.language]?.projects.title}</h2>
                 <p>
-                    It is a long established fact that a reader will be distracted by the of readable content of page  lookings at its layouts  points.
+                    {appContext.languages?.[appContext.language]?.projects.subtitle}
 
                 </p>
             </div>
@@ -41,7 +68,9 @@ function ProjectsList(){
                             ></div>
                             <h3>{project.title}</h3>
                             <p>{project.subtitle}</p>
-                            <img src={LikeFilled} height="20px" />
+                            <Button buttonStyle='unstyled'onClick={()=> handleSavedFavProjects(project.id)}>
+                                <img src={favProjects.includes(project.id) ?LikeFilled : LikeOut} height="20px" />
+                            </Button>
                         </div>
                     ))
                 }

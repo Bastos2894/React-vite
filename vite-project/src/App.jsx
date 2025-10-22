@@ -1,5 +1,6 @@
-
+import { useContext } from 'react'
 import {BrowserRouter as Router, Route, Routes, Link } from 'react-router-dom'
+import LoadingSpinner from './components/LoadingSpinner/LoadingSpinner'
 
 // PAGES
 import Home from './pages/Home'
@@ -9,10 +10,15 @@ import Contact from './pages/Contact'
 
 //UTILS
 import ScrollToTop from './Utils/ScrollTop'
+import { AppContext } from './contexts/AppContext'
 
 
 function App() {
-
+  const appContext = useContext(AppContext)
+  if(appContext.loading){
+              
+    return <LoadingSpinner/> 
+  }
   return (
     <Router>
       <ScrollToTop/>
